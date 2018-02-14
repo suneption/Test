@@ -43,22 +43,31 @@ namespace Saber.TestTask
             return closePartStr;
         }
 
-        public ListRand ToList(CommandsStream commands, Dictionary<int, ListNode> idMappings)
+        public ListRand ToList(FileLinesStream commands, Dictionary<int, ListNode> idMappings)
         {
-            var line = commands.Peek();
-            if (line != Constants.ObjectSymbols.Start)
+            var element = commands.Peek();
+            if (element != Constants.ObjectSymbols.Start)
             {
                 return null;
             }
 
             var list = new ListRand();
-            line = commands.Next();
+            
+            //if (commands.Next() == Constants.ObjectSymbols.End)
+            //{
+            //    return list;
+            //}
+
+            var line = commands.Next();
             while (line != null)
             {
-                var nameRaw = line.TakeWhile(x => x != ':').ToArray();
-                var name = new string(nameRaw).Trim();
-                var valueRaw = line.Skip(nameRaw.Length + 1).ToArray();
-                var value = new string(valueRaw).Trim();
+                var (name, value) = Split(line);
+
+                ////var skipped = e.SkipWhile(x => !char.IsLetterOrDigit(x.ToCharArray().First())).ToList();
+                //var nameRaw = e.TakeWhile(x => x != ":").ToList();
+                //var name = string.Join("", nameRaw).Trim();
+                //var valueRaw = e.Skip(1).TakeWhile(x => x != "," && x != "}").ToList();
+                //var value = string.Join("", valueRaw);
 
                 switch (name)
                 {
@@ -112,6 +121,15 @@ namespace Saber.TestTask
         private ListNode ToLink(string value, Dictionary<int, ListNode> idMappings)
         {
             return _listNodeConverter.ToLinkFromString(value, idMappings);
+        }
+
+        public (string name, string value) Split(string line)
+        {
+            var nameRaw = line.TakeWhile(x => x != ':').ToArray();
+            var name = new string(nameRaw).Trim();
+            var valueRaw = line.Skip(nameRaw.Length + 1).ToArray();
+            var value = new string(valueRaw).Trim();
+            return (name, value);
         }
     }
 }

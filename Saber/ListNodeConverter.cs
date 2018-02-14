@@ -44,7 +44,7 @@ namespace Saber.TestTask
             return result.ToString();
         }
 
-        public ListNode ToNode(CommandsStream commandsStream, Dictionary<int, ListNode> idMappings)
+        public ListNode ToNode(FileLinesStream commandsStream, Dictionary<int, ListNode> idMappings)
         {
             //var c = new FromStringToObject<ListNode>();
             //var res = c.Foo(commandsStream, idMappings);
@@ -141,115 +141,90 @@ namespace Saber.TestTask
         }
     }
 
-    public class FromStringToObject<TObject> where TObject : class, new()
-    {
-        public TObject Foo(CommandsStream elementsStream, Dictionary<int, TObject> idMappings)
-        {
-            var line = elementsStream.Peek();
-            if (line != Constants.ObjectSymbols.Start)
-            {
-                return null;
-            }
+    //public class FromStringToObject<TObject> where TObject : class, new()
+    //{
+    //    public TObject Foo(CommandsStream elementsStream, Dictionary<int, TObject> idMappings)
+    //    {
+    //        var line = elementsStream.Peek();
+    //        if (line != Constants.ObjectSymbols.Start)
+    //        {
+    //            return null;
+    //        }
 
-            var type = typeof(TObject);
-            var fields = type.GetFields().Where(f => f.IsPublic).ToList();
-            var fieldNames = fields.Select(x => x.Name).ToList();
+    //        var type = typeof(TObject);
+    //        var fields = type.GetFields().Where(f => f.IsPublic).ToList();
+    //        var fieldNames = fields.Select(x => x.Name).ToList();
 
-            var node = new TObject();
-            line = elementsStream.Next();
-            while (line != null)
-            {
-                var nameRaw = line.TakeWhile(x => x != ':').ToArray();
-                var name = new string(nameRaw).Trim();
-                var valueRaw = line.Skip(nameRaw.Length + 1).ToArray();
-                var value = new string(valueRaw).Trim();
+    //        var node = new TObject();
+    //        line = elementsStream.Next();
+    //        while (line != null)
+    //        {
+    //            var nameRaw = line.TakeWhile(x => x != ':').ToArray();
+    //            var name = new string(nameRaw).Trim();
+    //            var valueRaw = line.Skip(nameRaw.Length + 1).ToArray();
+    //            var value = new string(valueRaw).Trim();
 
-                if (name == Constants.ObjectSymbols.ListNode.Id)
-                {
-                    if (string.IsNullOrEmpty(value))
-                    {
-                        throw new FileHasIncorrectFormat();
-                    }
-                    node = ToLink(value, idMappings);
-                }
-                else if (fieldNames.Contains(name))
-                {
-                    var field = fields.First(x => x.Name == name);
-                    var fieldType = field.FieldType;
-                    if (fieldType == typeof(string))
-                    {
-                        field.SetValue(node, value);
-                    }
-                    else if (!fieldType.IsValueType)
-                    {
-                        var link = ToLink(value, idMappings);
-                        field.SetValue(node, link);
-                    }
-                }
-                else if (name == "}")
-                {
-                    elementsStream.Next();
-                    return node;
-                }
-                else
-                {
-                    throw new ArgumentException("Incorrect symbol");
-                }
+    //            if (name == Constants.ObjectSymbols.ListNode.Id)
+    //            {
+    //                if (string.IsNullOrEmpty(value))
+    //                {
+    //                    throw new FileHasIncorrectFormat();
+    //                }
+    //                node = ToLink(value, idMappings);
+    //            }
+    //            else if (fieldNames.Contains(name))
+    //            {
+    //                var field = fields.First(x => x.Name == name);
+    //                var fieldType = field.FieldType;
+    //                if (fieldType == typeof(string))
+    //                {
+    //                    field.SetValue(node, value);
+    //                }
+    //                else if (!fieldType.IsValueType)
+    //                {
+    //                    var link = ToLink(value, idMappings);
+    //                    field.SetValue(node, link);
+    //                }
+    //            }
+    //            else if (name == "}")
+    //            {
+    //                elementsStream.Next();
+    //                return node;
+    //            }
+    //            else
+    //            {
+    //                throw new ArgumentException("Incorrect symbol");
+    //            }
 
-                line = elementsStream.Next();
-            }
+    //            line = elementsStream.Next();
+    //        }
 
-            return node;
-        }
+    //        return node;
+    //    }
 
-        private TObject ToLink(string value, Dictionary<int, TObject> idMappings)
-        {
-            if (string.IsNullOrEmpty(value))
-            {
-                return null;
-            }
+    //    private TObject ToLink(string value, Dictionary<int, TObject> idMappings)
+    //    {
+    //        if (string.IsNullOrEmpty(value))
+    //        {
+    //            return null;
+    //        }
 
-            var id = int.Parse(value);
-            var node = GetOrAddNode(idMappings, id);
+    //        var id = int.Parse(value);
+    //        var node = GetOrAddNode(idMappings, id);
 
-            return node;
-        }
+    //        return node;
+    //    }
 
-        private TObject GetOrAddNode(Dictionary<int, TObject> idMappings, int id)
-        {
-            if (idMappings.TryGetValue(id, out var node))
-            {
-                return node;
-            }
+    //    private TObject GetOrAddNode(Dictionary<int, TObject> idMappings, int id)
+    //    {
+    //        if (idMappings.TryGetValue(id, out var node))
+    //        {
+    //            return node;
+    //        }
 
-            node = new TObject();
-            idMappings[id] = node;
-            return node;
-        }
-    }
-
-    public static class Constants
-    {
-        public static class ArraySymbols
-        {
-            public const string Start = "[";
-            public const string End = "]";
-        }
-
-        public static class ObjectSymbols
-        {
-            public const string Start = "{";
-            public const string End = "}";
-
-            public static class ListRand
-            {
-                public const string Nodes = "Nodes";
-            }
-
-            public static class ListNode
-            {
-                public const string Id = "Id";
-            }
-        }
-    }
+    //        node = new TObject();
+    //        idMappings[id] = node;
+    //        return node;
+    //    }
+    //}
 }

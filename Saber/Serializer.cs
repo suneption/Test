@@ -97,5 +97,45 @@ namespace Saber.TestTask
 
             return idMappings;
         }
+
+        private class Deserializer
+        {
+            public ListRand Deserialize()
+            {
+                var lines = FileManager.ReadLines();
+
+                var idMappings = new Dictionary<int, ListNode>();
+                var commandsStream = new FileLinesStream(lines);
+                var list = Deserialize(commandsStream, idMappings);
+
+                return list;
+            }
+
+            public ListRand Deserialize(FileLinesStream commands, Dictionary<int, ListNode> idMappings)
+            {
+                var converter = new ListRandConverter();
+                var list = converter.ToList(commands, idMappings);
+                return list;
+            }
+
+            private ListNode ToLink(string value, Dictionary<int, ListNode> idMappings)
+            {
+                if (string.IsNullOrEmpty(value))
+                {
+                    return null;
+                }
+
+                var id = int.Parse(value);
+                if (idMappings.TryGetValue(id, out var node))
+                {
+                    return node;
+                }
+
+                node = new ListNode();
+                idMappings[id] = node;
+
+                return node;
+            }
+        }
     }
 }

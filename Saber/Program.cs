@@ -42,6 +42,7 @@ namespace Saber.TestTask
                 Tail = tailNode,
                 Count = 3
             };
+
             using (var fs = File.Open("test.txt", FileMode.Open))
             {
                 //list.Serialize(fs);

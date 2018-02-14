@@ -9,11 +9,13 @@ namespace Saber.TestTask
 {
     public class FileManager : IFileManager
     {
-        private FileStream _innerFileStream;
+        private readonly FileStream _innerFileStream;
+        private readonly StreamReader _innerStreamReader;
 
         public FileManager(FileStream fileStream)
         {
             _innerFileStream = fileStream;
+            _innerStreamReader = new StreamReader(_innerFileStream, Encoding.UTF8);
         }
 
         public void Write(byte[] bytes)
@@ -38,6 +40,22 @@ namespace Saber.TestTask
 
             var result = bytes.Take(count).ToArray();
             return result;
+        }
+
+        public IEnumerable<string> ReadLines()
+        {
+            string line = null;
+            do
+            {
+                line = _innerStreamReader.ReadLine();
+                yield return line;
+            }
+            while (line != null);
+        }
+
+        public void WriteLine(string input)
+        {
+
         }
     }
 }

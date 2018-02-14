@@ -45,6 +45,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="CommandsStream.cs" />
+    <Compile Include="Constants.cs" />
     <Compile Include="Deserializer.cs" />
     <Compile Include="Exceptions.cs" />
     <Compile Include="IConverter.cs" />
