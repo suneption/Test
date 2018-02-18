@@ -45,10 +45,16 @@ namespace Saber.TestTask
 
             using (var fs = File.Open("test.txt", FileMode.Open))
             {
-                //list.Serialize(fs);
-                //fs.Flush();
-                list.Deserialize(fs);
+                list.Serialize(fs);
             }
+
+            var deserialized = new ListRand();
+            using (var fs = File.Open("test.txt", FileMode.Open))
+            {
+                deserialized.Deserialize(fs);
+            }
+
+            Console.WriteLine(deserialized);
         }
     }
 
@@ -66,15 +72,24 @@ namespace Saber.TestTask
         public int Count;
         public void Serialize(FileStream s)
         {
+            var serializer = new Serializer();
+            var lines = serializer.Serialize(this);
+
             var fileManager = new FileManager(s);
-            var serializer = new Serializer(fileManager);
-            serializer.Serialize(this);
+            foreach (var line in lines)
+            {
+                fileManager.Write(line);
+            }
         }
         public void Deserialize(FileStream s)
         {
             var fileManager = new FileManager(s);
-            var deserializer = new Deserializer(fileManager);
-            var listRand = deserializer.Deserialize();
+            var serializer = new Serializer();
+            var fileLines = fileManager.ReadLines();
+            var deserialized = serializer.Deserialize(fileLines);
+            Head = deserialized.Head;
+            Tail = deserialized.Tail;
+            Count = deserialized.Count;
         }
     }
 }

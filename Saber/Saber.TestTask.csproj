@@ -45,13 +45,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="CommandsStream.cs" />
+    <Compile Include="FileLinesStream.cs" />
     <Compile Include="Constants.cs" />
-    <Compile Include="Deserializer.cs" />
     <Compile Include="Exceptions.cs" />
-    <Compile Include="IConverter.cs" />
-    <Compile Include="IListNodeConverter.cs" />
-    <Compile Include="IListRandConverter.cs" />
     <Compile Include="ListNodeConverter.cs" />
     <Compile Include="FileManager.cs" />
     <Compile Include="IFileManager.cs" />

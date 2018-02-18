@@ -8,33 +8,26 @@ namespace Saber.TestTask
 {
     public class Serializer
     {
-        public IFileManager FileManager { get; }
-
-        public Serializer(IFileManager fileManager)
-        {
-            FileManager = fileManager;
-        }
-
-        public byte[] EncodeToBytes(string input)
-        {
-            var bytes = Encoding.UTF8.GetBytes(input);
-            return bytes;
-        }
-        
-        public void Serialize(ListRand list)
+        public IEnumerable<string> Serialize(ListRand list)
         {
             var idMappings = GenerateIdMappings(list.Head, list.Tail);
 
             var converter = new ListRandConverter(idMappings);
             var serializedList = SerializeListAsStream(list, idMappings);
 
-            foreach (var item in serializedList)
-            {
-                WriteToFile(item);
-            }
+            return serializedList;
         }
 
-        public IEnumerable<string> SerializeListAsStream(ListRand list, IReadOnlyDictionary<ListNode, int> idMappings)
+        public ListRand Deserialize(IEnumerable<string> fileLines)
+        {
+            var idMappings = new Dictionary<int, ListNode>();
+            var fileLinesStream = new FileLinesStream(fileLines);
+            var converter = new ListRandConverter();
+            var list = converter.ToListRand(fileLinesStream, idMappings);
+            return list;
+        }
+
+        private IEnumerable<string> SerializeListAsStream(ListRand list, IReadOnlyDictionary<ListNode, int> idMappings)
         {
             var listConverter = new ListRandConverter(idMappings);
 
@@ -50,7 +43,7 @@ namespace Saber.TestTask
             yield return listConverter.GetStringOfClosePart();
         }
 
-        public IEnumerable<string> SerializeNodesAsStream(IReadOnlyDictionary<ListNode, int> idMappings, ListNode headNode)
+        private IEnumerable<string> SerializeNodesAsStream(IReadOnlyDictionary<ListNode, int> idMappings, ListNode headNode)
         {
             var currNode = headNode;
             while (currNode != null)
@@ -61,13 +54,7 @@ namespace Saber.TestTask
                 currNode = currNode.Next;
             }
         }
-
-        private void WriteToFile(string input)
-        {
-            var dataBytes = EncodeToBytes(input);
-            FileManager.Write(dataBytes);
-        }
-
+        
         private int GetOrAddIdMapping(Dictionary<ListNode, int> table, ListNode node, int newId)
         {
             if (table.TryGetValue(node, out var existingId))
@@ -96,46 +83,6 @@ namespace Saber.TestTask
             }
 
             return idMappings;
-        }
-
-        private class Deserializer
-        {
-            public ListRand Deserialize()
-            {
-                var lines = FileManager.ReadLines();
-
-                var idMappings = new Dictionary<int, ListNode>();
-                var commandsStream = new FileLinesStream(lines);
-                var list = Deserialize(commandsStream, idMappings);
-
-                return list;
-            }
-
-            public ListRand Deserialize(FileLinesStream commands, Dictionary<int, ListNode> idMappings)
-            {
-                var converter = new ListRandConverter();
-                var list = converter.ToList(commands, idMappings);
-                return list;
-            }
-
-            private ListNode ToLink(string value, Dictionary<int, ListNode> idMappings)
-            {
-                if (string.IsNullOrEmpty(value))
-                {
-                    return null;
-                }
-
-                var id = int.Parse(value);
-                if (idMappings.TryGetValue(id, out var node))
-                {
-                    return node;
-                }
-
-                node = new ListNode();
-                idMappings[id] = node;
-
-                return node;
-            }
         }
     }
 }

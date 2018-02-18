@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace Saber.TestTask
@@ -18,9 +19,15 @@ namespace Saber.TestTask
                 using (var provider = CodeDomProvider.CreateProvider("CSharp"))
                 {
                     provider.GenerateCodeFromExpression(new CodePrimitiveExpression(input), writer, null);
-                    return writer.ToString();
+                    var result = writer.ToString();
+                    return result.TrimStart('\"').TrimEnd('\"');
                 }
             }
+        }
+
+        public static string FromLiteral(this string input)
+        {
+            return Regex.Unescape(input);
         }
     }
 }

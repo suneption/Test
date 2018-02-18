@@ -5,9 +5,9 @@ using System.Text;
 
 namespace Saber.TestTask
 {
-    public class ListRandConverter : IListRandConverter
+    public class ListRandConverter
     {
-        private IListNodeConverter _listNodeConverter;
+        private ListNodeConverter _listNodeConverter;
         private IReadOnlyDictionary<ListNode, int> _idMappings;
 
         public ListRandConverter()
@@ -43,9 +43,9 @@ namespace Saber.TestTask
             return closePartStr;
         }
 
-        public ListRand ToList(FileLinesStream commands, Dictionary<int, ListNode> idMappings)
+        public ListRand ToListRand(FileLinesStream fileLines, Dictionary<int, ListNode> idMappings)
         {
-            var element = commands.Peek();
+            var element = fileLines.Peek();
             if (element != Constants.ObjectSymbols.Start)
             {
                 return null;
@@ -58,16 +58,10 @@ namespace Saber.TestTask
             //    return list;
             //}
 
-            var line = commands.Next();
+            var line = fileLines.Next();
             while (line != null)
             {
                 var (name, value) = Split(line);
-
-                ////var skipped = e.SkipWhile(x => !char.IsLetterOrDigit(x.ToCharArray().First())).ToList();
-                //var nameRaw = e.TakeWhile(x => x != ":").ToList();
-                //var name = string.Join("", nameRaw).Trim();
-                //var valueRaw = e.Skip(1).TakeWhile(x => x != "," && x != "}").ToList();
-                //var value = string.Join("", valueRaw);
 
                 switch (name)
                 {
@@ -86,28 +80,28 @@ namespace Saber.TestTask
                             throw new FileHasIncorrectFormat();
                         }
 
-                        commands.Next();
+                        fileLines.Next();
                         ListNode node = null;
                         do
                         {
                             var nodeConverter = new ListNodeConverter();
-                            node = nodeConverter.ToNode(commands, idMappings);
+                            node = nodeConverter.ToNode(fileLines, idMappings);
                         } while (node != null);
 
-                        var command = commands.Peek();
+                        var command = fileLines.Peek();
                         if (command != Constants.ArraySymbols.End)
                         {
                             throw new FileHasIncorrectFormat();
                         }
                         break;
                     case Constants.ObjectSymbols.End:
-                        commands.Next();
+                        fileLines.Next();
                         return list;
                     default:
                         throw new FileHasIncorrectFormat();
                 }
 
-                line = commands.Next();
+                line = fileLines.Next();
             }
 
             return list;
@@ -125,11 +119,7 @@ namespace Saber.TestTask
 
         public (string name, string value) Split(string line)
         {
-            var nameRaw = line.TakeWhile(x => x != ':').ToArray();
-            var name = new string(nameRaw).Trim();
-            var valueRaw = line.Skip(nameRaw.Length + 1).ToArray();
-            var value = new string(valueRaw).Trim();
-            return (name, value);
+            return _listNodeConverter.Split(line);
         }
     }
 }

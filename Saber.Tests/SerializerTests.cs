@@ -5,7 +5,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using DeepCompare = NUnit.DeepObjectCompare.Is;
 
 namespace Saber.Tests
 {
@@ -18,6 +20,28 @@ namespace Saber.Tests
                 return new ListNode
                 {
                     Data = "Node without links"
+                };
+            }
+        }
+
+        public static ListNode HeadNode
+        {
+            get
+            {
+                return new ListNode
+                {
+                    Data = "Head node"
+                };
+            }
+        }
+
+        public static ListNode TailNode
+        {
+            get
+            {
+                return new ListNode
+                {
+                    Data = "Tail node"
                 };
             }
         }
@@ -54,17 +78,6 @@ namespace Saber.Tests
             }
         }
 
-        public static ListNode NodeWithNextNodeThatIsRandNodeAlso
-        {
-            get
-            {
-                var result = NodeWithoutLinks;
-                result.Rand = RandomNode;
-                result.Next = RandomNode;
-                return result;
-            }
-        }
-
         public static ListRand ListRandWithTwoListNodes
         {
             get
@@ -89,6 +102,7 @@ namespace Saber.Tests
                 var result = new ListRand();
                 result.Head = node;
                 result.Tail = node;
+                result.Count = 1;
                 return result;
             }
         }
@@ -97,10 +111,14 @@ namespace Saber.Tests
         {
             get
             {
-                var node = NodeWithLinkToRandomNode;
+                var headNode = HeadNode;
+                var tailNode = TailNode;
+                headNode.Next = tailNode;
+                headNode.Rand = tailNode;
                 var result = new ListRand();
-                result.Head = node;
-                result.Tail = node;
+                result.Head = headNode;
+                result.Tail = tailNode;
+                result.Count = 2;
                 return result;
             }
         }
@@ -109,58 +127,44 @@ namespace Saber.Tests
     [TestFixture]
     public class SerializerTests
     {
-        private Mock<IListNodeConverter> GetListNodeConvert()
+        private Serializer GetSerializer()
         {
-            var converter = new Mock<IListNodeConverter>();
-            return converter;
-        }
-
-        private Mock<IFileManager> GetFileManager()
-        {
-            var fileManagerMock = new Mock<IFileManager>();
-            return fileManagerMock;
-        }
-
-        private Serializer GetSerializer(IFileManager fileManager)
-        {
-            var serializer = new Serializer(fileManager);
+            var serializer = new Serializer();
             return serializer;
         }
 
         [Test]
         public void Serializer_CreationTest_Successfull()
         {
-            var fileManagerMock = new Mock<IFileManager>();
-            var converter = GetListNodeConvert();
-            var serializer = GetSerializer(fileManagerMock.Object);
+            var serializer = GetSerializer();
 
             Assert.That(serializer != null);
         }
 
         [Test]
-        public void Serializer_SerializeOneNodeWithoutLinks_Successful()
+        public void SerializeDeserialize_OneNodeWithoutLinks_Successful()
         {
-            var fileManagerMock = GetFileManager();
-            fileManagerMock.Setup(x => x.Write(It.IsAny<byte[]>()));
-            var serializer = GetSerializer(fileManagerMock.Object);
-            var list = ContainerOfListNodes.ListRandWithOneNode;
+            var serializer = GetSerializer();
+            var origin = ContainerOfListNodes.ListRandWithOneNode;
 
-            serializer.Serialize(list);
+            var serialized = serializer.Serialize(origin);
+            var splitted = serialized.SelectMany(x => x.Split(new[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries)).ToList(); ;
+            var deserialized = serializer.Deserialize(splitted);
 
-            fileManagerMock.Verify(x => x.Write(It.IsAny<byte[]>()), Times.Exactly(3));
+            Assert.That(origin, DeepCompare.DeepEqualTo(deserialized));
         }
 
         [Test]
-        public void Serialize_ListWithTwoNodes_Success()
+        public void SerializeDeserialize_ListWithTwoNodes_Success()
         {
-            var fileManagerMock = GetFileManager();
-            fileManagerMock.Setup(x => x.Write(It.IsAny<byte[]>()));
-            var serializer = GetSerializer(fileManagerMock.Object);
-            var list = ContainerOfListNodes.ListRandWithOneNodeThatHasRandNode;
+            var serializer = GetSerializer();
+            var origin = ContainerOfListNodes.ListRandWithOneNodeThatHasRandNode;
 
-            serializer.Serialize(list);
+            var serialized = serializer.Serialize(origin);
+            var splitted = serialized.SelectMany(x => x.Split(new[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries)).ToList(); ;
+            var deserialized = serializer.Deserialize(splitted);
 
-            fileManagerMock.Verify(x => x.Write(It.IsAny<byte[]>()), Times.Exactly(3));
+            Assert.That(origin, DeepCompare.DeepEqualTo(deserialized));
         }
     }
 }

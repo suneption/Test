@@ -11,35 +11,18 @@ namespace Saber.TestTask
     {
         private readonly FileStream _innerFileStream;
         private readonly StreamReader _innerStreamReader;
+        private readonly StreamWriter _innerStreamWriter;
 
         public FileManager(FileStream fileStream)
         {
             _innerFileStream = fileStream;
             _innerStreamReader = new StreamReader(_innerFileStream, Encoding.UTF8);
+            _innerStreamWriter = new StreamWriter(_innerFileStream, Encoding.UTF8);
         }
 
-        public void Write(byte[] bytes)
+        public void Write(string input)
         {
-            _innerFileStream.Write(bytes, 0, bytes.Length);
-        }
-
-        public byte[] Read()
-        {
-            var bytes = new byte[4 * 1024];
-            var count = _innerFileStream.Read(bytes, 0, bytes.Length);
-
-            if (count == 0)
-            {
-                return new byte[] { };
-            }
-
-            if (count == bytes.Length)
-            {
-                return bytes;
-            }
-
-            var result = bytes.Take(count).ToArray();
-            return result;
+            _innerStreamWriter.Write(input);
         }
 
         public IEnumerable<string> ReadLines()
@@ -53,9 +36,9 @@ namespace Saber.TestTask
             while (line != null);
         }
 
-        public void WriteLine(string input)
+        public void Flush()
         {
-
+            _innerStreamWriter.Flush();
         }
     }
 }
