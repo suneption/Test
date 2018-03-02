@@ -43,7 +43,7 @@ namespace Saber.TestTask
                 Count = 3
             };
 
-            using (var fs = File.Open("test.txt", FileMode.Open))
+            using (var fs = File.Open("test.txt", FileMode.OpenOrCreate))
             {
                 list.Serialize(fs);
             }
@@ -53,8 +53,6 @@ namespace Saber.TestTask
             {
                 deserialized.Deserialize(fs);
             }
-
-            Console.WriteLine(deserialized);
         }
     }
 
@@ -80,6 +78,7 @@ namespace Saber.TestTask
             {
                 fileManager.Write(line);
             }
+            fileManager.Flush();
         }
         public void Deserialize(FileStream s)
         {

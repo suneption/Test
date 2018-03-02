@@ -10,7 +10,7 @@ namespace Saber.TestTask
     {
         public IEnumerable<string> Serialize(ListRand list)
         {
-            var idMappings = GenerateIdMappings(list.Head, list.Tail);
+            var idMappings = GenerateIdMappings(list);
 
             var converter = new ListRandConverter(idMappings);
             var serializedList = SerializeListAsStream(list, idMappings);
@@ -67,10 +67,11 @@ namespace Saber.TestTask
             return newId;
         }
 
-        private IReadOnlyDictionary<ListNode, int> GenerateIdMappings(ListNode headNode, ListNode tailNode)
+        private IReadOnlyDictionary<ListNode, int> GenerateIdMappings(ListRand list)
         {
+            var headNode = list.Head;
             var startId = 0;
-            var idMappings = new Dictionary<ListNode, int>();
+            var idMappings = new Dictionary<ListNode, int>(list.Count);
             var currNode = headNode;
             while (currNode != null)
             {

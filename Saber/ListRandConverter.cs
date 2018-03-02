@@ -52,11 +52,6 @@ namespace Saber.TestTask
             }
 
             var list = new ListRand();
-            
-            //if (commands.Next() == Constants.ObjectSymbols.End)
-            //{
-            //    return list;
-            //}
 
             var line = fileLines.Next();
             while (line != null)

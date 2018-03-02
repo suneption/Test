@@ -5,7 +5,7 @@ namespace Saber.TestTask
 {
     public class FileLinesStream : IDisposable
     {
-        private readonly IEnumerator<string> _commandsEnumerator;
+        private readonly IEnumerator<string> _innerEnumerator;
         public IEnumerable<string> OriginLines { get; }
 
         public FileLinesStream(IEnumerable<string> lines)
@@ -21,29 +21,29 @@ namespace Saber.TestTask
                 enumerator.Dispose();
                 throw;
             }
-            _commandsEnumerator = enumerator;
+            _innerEnumerator = enumerator;
         }
         
         public string Peek()
         {
-            return _commandsEnumerator.Current;
+            return _innerEnumerator.Current;
         }
         
         public string Next()
         {
-            if (!_commandsEnumerator.MoveNext())
+            if (!_innerEnumerator.MoveNext())
             {
                 return null;
             }
 
-            return _commandsEnumerator.Current;
+            return _innerEnumerator.Current;
         }
 
         public void Dispose()
         {
-            if (_commandsEnumerator != null)
+            if (_innerEnumerator != null)
             {
-                _commandsEnumerator.Dispose();
+                _innerEnumerator.Dispose();
             }
         }
     }
